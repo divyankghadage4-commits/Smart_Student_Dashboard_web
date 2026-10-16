@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Portal Login | Student Academic Management Dashboard</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="login-body">
+
+  <!-- Decorative Animated Background Blobs -->
+  <div class="animated-bg-blob blob-1"></div>
+  <div class="animated-bg-blob blob-2"></div>
+  <div class="animated-bg-blob blob-3"></div>
+
+  <div class="login-card">
+    <div class="login-header">
+      <div class="login-logo">
+        <i data-lucide="graduation-cap" size="28"></i>
+      </div>
+      <h1>Academic Portal</h1>
+      <p>Student & Campus Management System</p>
+    </div>
+
+    <!-- Role Tabs (3 Tabs) -->
+    <div class="role-tab-group">
+      <button type="button" class="role-tab-btn active" id="tab-student" onclick="setRole('student')">
+        <i data-lucide="user" size="14"></i> Student
+      </button>
+      <button type="button" class="role-tab-btn" id="tab-dept-admin" onclick="setRole('dept_admin')">
+        <i data-lucide="building" size="14"></i> Dept Admin
+      </button>
+      <button type="button" class="role-tab-btn" id="tab-head-admin" onclick="setRole('head_admin')">
+        <i data-lucide="shield-check" size="14"></i> Head Admin
+      </button>
+    </div>
+
+    {% if error %}
+      <div style="background: var(--accent-rose-bg); color: var(--accent-rose); padding: 10px 14px; border-radius: var(--radius-md); font-size: 0.85rem; font-weight: 600; margin-bottom: 1.25rem; display: flex; align-items: center; gap: 8px;">
+        <i data-lucide="alert-circle" size="18"></i>
+        <span>{{ error }}</span>
+      </div>
+    {% endif %}
+
+    <form method="POST" action="{{ url_for('login') }}">
+      <div class="form-group">
+        <label for="student_id" id="id-label">Student Roll No. / ID</label>
+        <input type="text" id="student_id" name="student_id" class="form-control" placeholder="e.g. 240101001" required autofocus>
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" class="form-control" placeholder="Enter password" required>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="width: 100%; padding: 12px; margin-top: 8px;">
+        <span>Login to Portal</span>
+        <i data-lucide="arrow-right" size="18"></i>
+      </button>
+    </form>
+
+    <!-- Credentials Hint Helper -->
+    <div style="margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--border-color); font-size: 0.8rem; color: var(--text-muted);">
+      <div id="student-hint">
+        <strong style="color: var(--text-main);"><i data-lucide="info" size="14"></i> Student Hint:</strong>
+        <div>Enter your Roll Number (e.g. <strong>240101001</strong>) and password (default is <strong>pass123</strong>).</div>
+      </div>
+      <div id="dept-admin-hint" style="display: none;">
+        <strong style="color: var(--text-main);"><i data-lucide="info" size="14"></i> Dept Admin Hint:</strong>
+        <div>Enter your Admin ID (e.g. <strong>ADMIN01</strong>) and password (default is <strong>admin123</strong>).</div>
+      </div>
+      <div id="head-admin-hint" style="display: none;">
+        <strong style="color: var(--text-main);"><i data-lucide="info" size="14"></i> Head Admin Hint:</strong>
+        <div>Enter your Super-Admin ID (e.g. <strong>HEAD01</strong>) and password (default is <strong>admin123</strong>).</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    lucide.createIcons();
+
+    function setRole(role) {
+      const studentTab = document.getElementById('tab-student');
+      const deptAdminTab = document.getElementById('tab-dept-admin');
+      const headAdminTab = document.getElementById('tab-head-admin');
+      
+      const idLabel = document.getElementById('id-label');
+      const idInput = document.getElementById('student_id');
+      
+      const studentHint = document.getElementById('student-hint');
+      const deptAdminHint = document.getElementById('dept-admin-hint');
+      const headAdminHint = document.getElementById('head-admin-hint');
+
+      // Reset tabs
+      studentTab.classList.remove('active');
+      deptAdminTab.classList.remove('active');
+      headAdminTab.classList.remove('active');
+      
+      // Hide hints
+      studentHint.style.display = 'none';
+      deptAdminHint.style.display = 'none';
+      headAdminHint.style.display = 'none';
+
+      if (role === 'student') {
+        studentTab.classList.add('active');
+        idLabel.textContent = 'Student Roll No. / ID';
+        idInput.placeholder = 'e.g. 240101001';
+        studentHint.style.display = 'block';
+      } else if (role === 'dept_admin') {
+        deptAdminTab.classList.add('active');
+        idLabel.textContent = 'Department Admin User ID';
+        idInput.placeholder = 'e.g. ADMIN01';
+        deptAdminHint.style.display = 'block';
+      } else if (role === 'head_admin') {
+        headAdminTab.classList.add('active');
+        idLabel.textContent = 'Head Admin User ID';
+        idInput.placeholder = 'e.g. HEAD01';
+        headAdminHint.style.display = 'block';
+      }
+      idInput.focus();
+    }
+  </script>
+</body>
+</html>

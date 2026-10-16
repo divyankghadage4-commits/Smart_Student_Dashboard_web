@@ -1,0 +1,2019 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Academic Portal Dashboard | {{ student_name }}</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Chart.js CDN for visualizations -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body class="light-theme" data-role="{{ role }}" data-student-id="{{ student_id }}" data-student-name="{{ student_name }}">
+
+  <div class="app-container">
+
+    <!-- ============ TOP NAVBAR ============ -->
+    <header class="navbar">
+      <div class="navbar-left">
+        <button class="menu-toggle-btn" id="sidebar-toggle" title="Toggle Sidebar">
+          <i data-lucide="menu" size="20"></i>
+        </button>
+        <div class="navbar-brand">
+          <div class="brand-icon">
+            <i data-lucide="graduation-cap" size="20"></i>
+          </div>
+          <span>Academic Portal</span>
+        </div>
+        <div class="breadcrumbs">
+          <span>Portal</span>
+          <i data-lucide="chevron-right" size="14"></i>
+          <span class="current" id="breadcrumb-title">Dashboard</span>
+        </div>
+      </div>
+
+      <div class="navbar-right">
+        <!-- Dark Mode Toggle -->
+        <button class="nav-icon-btn" id="theme-toggle" title="Toggle Light/Dark Theme">
+          <i data-lucide="moon" id="theme-moon" size="18"></i>
+          <i data-lucide="sun" id="theme-sun" size="18" style="display: none;"></i>
+        </button>
+
+        <!-- Notification Dropdown Toggle -->
+        <div style="position: relative;">
+          <button class="nav-icon-btn" id="notif-toggle" title="Notifications" onclick="toggleNotifDrawer(event)">
+            <i data-lucide="bell" size="18"></i>
+            <span class="notification-badge" id="notif-count" style="display: none;">0</span>
+          </button>
+
+          <div id="notif-dropdown" class="notif-dropdown" style="display: none;">
+            <div class="notif-header">
+              <h4>Notifications</h4>
+              <button class="btn btn-secondary btn-sm" onclick="markAllNotificationsRead(event)" style="padding: 2px 8px; font-size: 0.75rem; border-radius: 4px; background: transparent; border: 1px solid var(--border-color); color: var(--text-main);">Mark all as read</button>
+            </div>
+            <div class="notif-body" id="notif-list">
+              <div class="notif-empty">No notifications</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- User Avatar & Profile Dropdown -->
+        <div class="user-profile-btn">
+          {% if avatar_url %}
+            <img src="{{ avatar_url }}" class="user-avatar" alt="Avatar">
+          {% else %}
+            <div class="user-avatar">{{ student_name[0] | upper }}</div>
+          {% endif %}
+          <span class="user-name">{{ student_name }}</span>
+        </div>
+
+        <a href="{{ url_for('logout') }}" class="btn btn-secondary btn-sm" title="Logout">
+          <i data-lucide="log-out" size="16"></i>
+          <span>Logout</span>
+        </a>
+      </div>
+    </header>
+
+    <div class="app-body">
+
+      <!-- ============ SIDEBAR NAVIGATION ============ -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-menu">
+          {% if role == 'admin' %}
+            <div class="sidebar-label">Admin Management</div>
+            <button class="nav-item active" data-tab="tab-admin-overview">
+              <i data-lucide="layout-dashboard" size="18"></i> Overview
+            </button>
+            <button class="nav-item" data-tab="tab-admin-students">
+              <i data-lucide="users" size="18"></i> Manage Students
+            </button>
+            <button class="nav-item" data-tab="tab-admin-attendance">
+              <i data-lucide="calendar" size="18"></i> Attendance
+            </button>
+            <button class="nav-item" data-tab="tab-admin-assessment">
+              <i data-lucide="award" size="18"></i> Assessments
+            </button>
+            <button class="nav-item" data-tab="tab-admin-results">
+              <i data-lucide="file-check-2" size="18"></i> Result Management
+            </button>
+            <button class="nav-item" data-tab="tab-admin-assignments">
+              <i data-lucide="book-open" size="18"></i> Assignments
+            </button>
+            <button class="nav-item" data-tab="tab-admin-announcements">
+              <i data-lucide="megaphone" size="18"></i> Broadcasts
+            </button>
+            <button class="nav-item" data-tab="tab-admin-documents">
+              <i data-lucide="file-text" size="18"></i> Documents
+            </button>
+            <button class="nav-item" data-tab="tab-admin-placements">
+              <i data-lucide="briefcase" size="18"></i> Placements
+            </button>
+            <button class="nav-item" data-tab="tab-admin-library">
+              <i data-lucide="book" size="18"></i> Library Catalog
+            </button>
+            <button class="nav-item" data-tab="tab-admin-leave">
+              <i data-lucide="clock" size="18"></i> Leave Approvals
+            </button>
+            {% if admin_type == 'head_admin' %}
+            <button class="nav-item" data-tab="tab-admin-manage-admins">
+              <i data-lucide="shield-check" size="18"></i> Manage Admins
+            </button>
+            {% endif %}
+            <button class="nav-item" data-tab="tab-admin-profile">
+              <i data-lucide="user" size="18"></i> My Profile
+            </button>
+          {% else %}
+            <div class="sidebar-label">Student Navigation</div>
+            <button class="nav-item active" data-tab="tab-dashboard">
+              <i data-lucide="layout-dashboard" size="18"></i> Dashboard
+            </button>
+            <button class="nav-item" data-tab="tab-profile">
+              <i data-lucide="user" size="18"></i> My Profile
+            </button>
+            <button class="nav-item" data-tab="tab-assignments">
+              <i data-lucide="book-open" size="18"></i> Assignments
+            </button>
+            <button class="nav-item" data-tab="tab-announcements">
+              <i data-lucide="megaphone" size="18"></i> Announcements
+            </button>
+            <button class="nav-item" data-tab="tab-documents">
+              <i data-lucide="file-text" size="18"></i> Documents
+            </button>
+            <button class="nav-item" data-tab="tab-assessment">
+              <i data-lucide="award" size="18"></i> Assessment Marks
+            </button>
+            <button class="nav-item" data-tab="tab-results">
+              <i data-lucide="file-check-2" size="18"></i> Results
+            </button>
+            <button class="nav-item" data-tab="tab-attendance">
+              <i data-lucide="calendar" size="18"></i> Attendance
+            </button>
+            <button class="nav-item" data-tab="tab-placement">
+              <i data-lucide="briefcase" size="18"></i> Placements
+            </button>
+            <button class="nav-item" data-tab="tab-library">
+              <i data-lucide="book" size="18"></i> Digital Library
+            </button>
+            <button class="nav-item" data-tab="tab-leave">
+              <i data-lucide="clock" size="18"></i> Leave Application
+            </button>
+          {% endif %}
+        </div>
+        <div class="sidebar-footer">
+          Academic Portal v2.0 • Pro
+        </div>
+      </aside>
+
+      <!-- ============ MAIN CONTENT AREA ============ -->
+      <main class="main-content">
+
+        {% if role == 'student' %}
+
+          <!-- MODULE 1: DASHBOARD OVERVIEW -->
+          <section id="tab-dashboard" class="tab-pane active">
+            <div class="page-header">
+              <div class="page-title">
+                <h2 id="dash-welcome">Welcome back, {{ student_name }}!</h2>
+                <p>Track your academic progress, upcoming tasks, and campus announcements.</p>
+              </div>
+            </div>
+
+            <!-- Summary Stat Cards Grid -->
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-icon blue"><i data-lucide="calendar"></i></div>
+                <div class="stat-info">
+                  <div class="label">Overall Attendance</div>
+                  <div class="value" id="dash-att-pct">0%</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon green"><i data-lucide="award"></i></div>
+                <div class="stat-info">
+                  <div class="label">CGPA</div>
+                  <div class="value" id="dash-cgpa">8.5</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon violet"><i data-lucide="bar-chart-2"></i></div>
+                <div class="stat-info">
+                  <div class="label">SGPA</div>
+                  <div class="value" id="dash-sgpa">0.0</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon amber"><i data-lucide="book-open"></i></div>
+                <div class="stat-info">
+                  <div class="label">Current Semester</div>
+                  <div class="value" id="dash-semester">Sem 6</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon rose"><i data-lucide="user-check"></i></div>
+                <div class="stat-info">
+                  <div class="label">Mentor Name</div>
+                  <div class="value" id="dash-mentor" style="font-size: 1rem; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 150px;">Loading...</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon red"><i data-lucide="file-text"></i></div>
+                <div class="stat-info">
+                  <div class="label">Pending Leaves</div>
+                  <div class="value" id="dash-pending-leaves">0</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Dashboard Split Layout -->
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+              <!-- Today's Schedule -->
+              <div class="content-card">
+                <div class="card-header">
+                  <h3><i data-lucide="clock" size="18"></i> Today's Schedule</h3>
+                </div>
+                <div id="dash-schedule-list">Loading schedule...</div>
+              </div>
+
+              <!-- Performance Trend Chart -->
+              <div class="content-card">
+                <div class="card-header">
+                  <h3><i data-lucide="trending-up" size="18"></i> Attendance Trend</h3>
+                </div>
+                <div style="height: 240px;">
+                  <canvas id="dash-chart-att"></canvas>
+                </div>
+              </div>
+
+              <!-- Recent Results Card -->
+              <div class="content-card">
+                <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                  <h3><i data-lucide="award" size="18"></i> Recent Results</h3>
+                  <button class="btn btn-secondary btn-sm" onclick="switchTab('tab-results')" style="padding: 2px 8px; font-size: 0.75rem;">View All</button>
+                </div>
+                <div id="dash-recent-results-list" style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
+                  <div style="text-align: center; color: var(--text-muted); padding: 20px;">No results published yet.</div>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- MODULE 2: PROFILE -->
+          <section id="tab-profile" class="tab-pane">
+            <div class="page-header">
+              <div class="page-title">
+                <h2>My Student Profile</h2>
+                <p>Personal, academic, and contact details.</p>
+              </div>
+              <button class="btn btn-primary" onclick="openModal('modal-edit-profile')">
+                <i data-lucide="edit-3" size="16"></i> Edit Profile
+              </button>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.5rem;">
+              <div class="content-card" style="text-align: center;">
+                <div id="profile-avatar-container" style="margin-bottom: 1rem;">
+                  {% if avatar_url %}
+                    <img src="{{ avatar_url }}" class="user-avatar" style="width: 90px; height: 90px; border-radius: var(--radius-full); object-fit: cover; margin: 0 auto; display: block; cursor: pointer;" alt="Avatar" onclick="expandImage('{{ avatar_url }}')">
+                  {% else %}
+                    <div class="user-avatar" style="width: 90px; height: 90px; font-size: 2.2rem; margin: 0 auto;">{{ student_name[0] }}</div>
+                  {% endif %}
+                </div>
+                <h3 id="prof-name" style="font-size: 1.25rem; font-weight: 700;">{{ student_name }}</h3>
+                <p id="prof-course" style="color: var(--text-muted); font-size: 0.9rem;">B.Tech Computer Science</p>
+
+                <form id="avatar-form" style="margin-top: 1.25rem;">
+                  <label class="btn btn-secondary btn-sm" style="cursor: pointer;">
+                    <i data-lucide="upload" size="14"></i> Upload Photo
+                    <input type="file" id="avatar-input" accept="image/*" style="display: none;" onchange="uploadAvatar()">
+                  </label>
+                </form>
+              </div>
+
+              <div class="content-card">
+                <div class="card-header">
+                  <h3><i data-lucide="info" size="18"></i> Academic Details</h3>
+                </div>
+                <div id="profile-details-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem;">
+                  <!-- Dynamic JS -->
+                </div>
+              </div>
+
+              <!-- Mentor Details Card -->
+              <div class="content-card">
+                <div class="card-header">
+                  <h3><i data-lucide="users" size="18"></i> Mentor Details</h3>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                  <div>
+                    <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Mentor Name</span>
+                    <span id="prof-mentor-name" style="font-weight: 600; color: var(--text-main);">-</span>
+                  </div>
+                  <div>
+                    <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Department</span>
+                    <span id="prof-mentor-dept" style="font-weight: 600; color: var(--text-main);">-</span>
+                  </div>
+                  <div>
+                    <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Email Address</span>
+                    <span id="prof-mentor-email" style="font-weight: 600; color: var(--text-main);">-</span>
+                  </div>
+                  <div>
+                    <span style="font-size: 0.8rem; color: var(--text-muted); display: block;">Contact Number</span>
+                    <span id="prof-mentor-phone" style="font-weight: 600; color: var(--text-main);">-</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Password Change Section -->
+            <div class="content-card" style="max-width: 500px;">
+              <div class="card-header">
+                <h3><i data-lucide="lock" size="18"></i> Security & Password</h3>
+              </div>
+              <form id="change-pass-form" onsubmit="handlePasswordChange(event)">
+                <div class="form-group">
+                  <label>Current Password</label>
+                  <input type="password" id="pass-old" class="form-control" required>
+                </div>
+                <div class="form-group">
+                  <label>New Password</label>
+                  <input type="password" id="pass-new" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-primary">Update Password</button>
+              </form>
+            </div>
+          </section>
+
+          <!-- MODULE 3: ASSIGNMENTS -->
+          <section id="tab-assignments" class="tab-pane">
+            <div class="page-header">
+              <div class="page-title">
+                <h2>Assignment Management</h2>
+                <p>View coursework tasks, submission deadlines, and upload your work.</p>
+              </div>
+              <div style="display: flex; gap: 10px;">
+                <input type="text" id="assign-search" class="form-control" placeholder="Search assignment..." oninput="filterAssignments()">
+              </div>
+            </div>
+
+            <div class="content-card">
+              <div class="table-responsive">
+                <table class="custom-table" id="assignments-table">
+                  <thead>
+                    <tr>
+                      <th>Subject</th>
+                      <th>Assignment Title</th>
+                      <th>Assigned</th>
+                      <th>Due Date</th>
+                      <th>Status</th>
+                      <th>Marks</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody><tr><td colspan="7">Loading assignments...</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- MODULE 4: ANNOUNCEMENTS -->
+          <section id="tab-announcements" class="tab-pane">
+            <div class="page-header">
+              <div class="page-title">
+                <h2>Campus Announcements</h2>
+                <p>Official news, exam circulars, and event broadcasts.</p>
+              </div>
+            </div>
+            <div id="announcements-container" style="display: flex; flex-direction: column; gap: 1rem;">
+              Loading announcements...
+            </div>
+          </section>
+
+          <!-- MODULE 5: DOCUMENTS -->
+          <section id="tab-documents" class="tab-pane">
+            <div class="page-header">
+              <div class="page-title">
+                <h2>Document Library</h2>
+                <p>Lecture notes, course syllabus, exam schedules, and circulars.</p>
+              </div>
+              <input type="text" id="doc-search" class="form-control" placeholder="Search documents..." style="max-width: 280px;" oninput="filterDocuments()">
+            </div>
+
+            <div id="documents-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+              Loading documents...
+            </div>
+          </section>
+
+          <!-- MODULE 6: STUDENT ASSESSMENT -->
+          <section id="tab-assessment" class="tab-pane">
+            <div class="page-header">
+              <div class="page-title">
+                <h2>Academic Performance & Assessment</h2>
+                <p>Subject-wise marks distribution, unit tests, and term grades.</p>
+              </div>
+            </div>
+
+            <div class="content-card">
+              <div style="height: 260px; margin-bottom: 1.5rem;">
+                <canvas id="assessment-chart"></canvas>
+              </div>
+              <div class="table-responsive">
+                <table class="custom-table" id="assessment-table">
+                  <thead>
+                    <tr>
+                      <th>Subject</th>
+                      <th>Assessment Type</th>
+                      <th>Marks Obtained</th>
+                      <th>Max Marks</th>
+                      <th>Percentage</th>
+                      <th>Grade</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody><tr><td colspan="7">Loading performance data...</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- MODULE 7: ATTENDANCE -->
+          <section id="tab-attendance" class="tab-pane">
+            <div class="page-header">
+              <div class="page-title">
+                <h2>Attendance Dashboard</h2>
+                <p>Track class presence, subject-wise threshold status, and monthly trends.</p>
+              </div>
+              <div id="attendance-status-badge"></div>
+            </div>
+
+            <div class="stats-grid">
+              <div class="stat-card">
+                <div class="stat-icon blue"><i data-lucide="check-circle"></i></div>
+                <div class="stat-info">
+                  <div class="label">Total Classes</div>
+                  <div class="value" id="att-total-cnt">0</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon green"><i data-lucide="user-check"></i></div>
+                <div class="stat-info">
+                  <div class="label">Classes Present</div>
+                  <div class="value" id="att-present-cnt">0</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon rose"><i data-lucide="user-x"></i></div>
+                <div class="stat-info">
+                  <div class="label">Classes Absent</div>
+                  <div class="value" id="att-absent-cnt">0</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="content-card">
+              <div class="card-header">
+                <h3>Subject-Wise Attendance Breakdown</h3>
+              </div>
+              <div id="subject-attendance-list" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+            </div>
+          </section>
+
+          <!-- MODULE 8: PLACEMENT -->
+          <section id="tab-placement" class="tab-pane">
+            <div class="page-header">
+              <div class="page-title">
+                <h2>Placement Preparation Portal</h2>
+                <p>Campus recruitment drives, skills inventory, and resume application tracker.</p>
+              </div>
+              <div id="placement-eligibility-badge"></div>
+            </div>
+
+            <!-- Skills Inventory Card -->
+            <div class="content-card">
+              <div class="card-header">
+                <h3><i data-lucide="code" size="18"></i> Technical & Soft Skills</h3>
+                <button class="btn btn-secondary btn-sm" onclick="openModal('modal-add-skill')"><i data-lucide="plus" size="14"></i> Add Skill</button>
+              </div>
+              <div id="skills-tags-container" style="display: flex; flex-wrap: wrap; gap: 8px;">Loading skills...</div>
+            </div>
+
+            <!-- Active Placement Drives -->
+            <div class="content-card">
+              <div class="card-header">
+                <h3><i data-lucide="briefcase" size="18"></i> Campus Placement Drives</h3>
+              </div>
+              <div id="drives-list-container" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 1.25rem;">
+                Loading placement drives...
+              </div>
+            </div>
+          </section>
+
+
+
+          <!-- MODULE 10: LIBRARY -->
+          <section id="tab-library" class="tab-pane">
+            <div class="page-header">
+              <div class="page-title">
+                <h2>Digital Library Management</h2>
+                <p>Issued books tracker, due date warnings, fine calculation, and catalog search.</p>
+              </div>
+            </div>
+
+            <div class="content-card">
+              <div class="card-header">
+                <h3><i data-lucide="book-open" size="18"></i> Currently Issued Books</h3>
+              </div>
+              <div class="table-responsive">
+                <table class="custom-table" id="issued-books-table">
+                  <thead>
+                    <tr>
+                      <th>Book Title</th>
+                      <th>Author</th>
+                      <th>Issue Date</th>
+                      <th>Due Date</th>
+                      <th>Overdue Fine</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody><tr><td colspan="6">Loading issued books...</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- MODULE 11: LEAVE APPLICATION -->
+          <section id="tab-leave" class="tab-pane">
+            <div class="page-header">
+              <div class="page-title">
+                <h2>Leave Application System</h2>
+                <p>Submit leave applications and track administrator approval responses.</p>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+              <div class="content-card">
+                <div class="card-header">
+                  <h3><i data-lucide="send" size="18"></i> Apply for Leave</h3>
+                </div>
+                <form id="leave-form" onsubmit="handleLeaveSubmit(event)">
+                  <div class="form-group">
+                    <label>From Date</label>
+                    <input type="date" id="leave-from" class="form-control" required>
+                  </div>
+                  <div class="form-group">
+                    <label>To Date</label>
+                    <input type="date" id="leave-to" class="form-control" required>
+                  </div>
+                  <div class="form-group">
+                    <label>Reason for Leave</label>
+                    <textarea id="leave-reason" class="form-control" rows="3" required placeholder="State your reason..."></textarea>
+                  </div>
+                  <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Leave Application</button>
+                </form>
+              </div>
+
+              <div class="content-card">
+                <div class="card-header">
+                  <h3><i data-lucide="clock" size="18"></i> Application History</h3>
+                </div>
+                <div class="table-responsive">
+                  <table class="custom-table" id="leave-history-table">
+                    <thead>
+                      <tr>
+                        <th>Dates</th>
+                        <th>Reason</th>
+                        <th>Status</th>
+                        <th>Admin Remarks</th>
+                      </tr>
+                    </thead>
+                    <tbody><tr><td colspan="4">Loading history...</td></tr></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          <!-- FEATURE 2: STUDENT RESULTS PANEL -->
+          <section id="tab-results" class="tab-pane">
+            <div class="page-header print-hide" style="display: flex; justify-content: space-between; align-items: center;">
+              <div class="page-title">
+                <h2>My Semester Results</h2>
+                <p>Track your academic grading, SGPA, CGPA, and subject scorecard.</p>
+              </div>
+            </div>
+
+            <div id="student-results-container">
+              <!-- Dynamically populated card decks per semester -->
+              <div style="text-align: center; color: var(--text-muted); padding: 40px;">
+                <div class="spinner" style="margin: 0 auto 10px auto;"></div>
+                Loading your results data...
+              </div>
+            </div>
+          </section>
+
+        {% else %}
+
+          <!-- ADMIN OVERVIEW TAB -->
+          <section id="tab-admin-overview" class="tab-pane active">
+            <style>
+              .quick-actions-section {
+                margin-top: 2.5rem;
+              }
+              .quick-actions-title {
+                font-size: 1.25rem;
+                font-weight: 700;
+                color: var(--text-main);
+                margin-bottom: 1.25rem;
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+              }
+              .quick-actions-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+                gap: 1.25rem;
+              }
+              .action-card {
+                background: var(--bg-card);
+                border: 1px solid var(--border-color);
+                border-radius: var(--radius-lg);
+                padding: 1.5rem;
+                display: flex;
+                align-items: flex-start;
+                gap: 1.25rem;
+                cursor: pointer;
+                transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+                position: relative;
+                overflow: hidden;
+              }
+              .action-card:hover {
+                transform: translateY(-3px);
+                border-color: var(--primary-color);
+                box-shadow: var(--shadow-md);
+              }
+              .action-card::before {
+                content: '';
+                position: absolute;
+                top: 0; left: 0; width: 4px; height: 100%;
+                background: var(--primary-color);
+                opacity: 0;
+                transition: opacity 0.2s;
+              }
+              .action-card:hover::before {
+                opacity: 1;
+              }
+              .action-icon {
+                padding: 0.85rem;
+                border-radius: var(--radius-md);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+              }
+              .action-details {
+                flex: 1;
+              }
+              .action-details h4 {
+                font-size: 1rem;
+                font-weight: 700;
+                margin-bottom: 0.35rem;
+                color: var(--text-main);
+                transition: color 0.2s;
+              }
+              .action-card:hover .action-details h4 {
+                color: var(--primary-color);
+              }
+              .action-details p {
+                font-size: 0.85rem;
+                color: var(--text-muted);
+                line-height: 1.45;
+                margin: 0;
+              }
+            </style>
+
+            <div class="page-header">
+              <div class="page-title">
+                <h2>Admin Command Center</h2>
+                <p>Real-time campus stats, enrollment counts, and quick management controls.</p>
+              </div>
+            </div>
+
+            <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));">
+              <div class="stat-card">
+                <div class="stat-icon blue"><i data-lucide="users"></i></div>
+                <div class="stat-info">
+                  <div class="label">Total Students</div>
+                  <div class="value" id="adm-total-students">0</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon green"><i data-lucide="calendar"></i></div>
+                <div class="stat-info">
+                  <div class="label">Avg Attendance</div>
+                  <div class="value" id="adm-avg-att">0%</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon amber"><i data-lucide="clock"></i></div>
+                <div class="stat-info">
+                  <div class="label">Pending Leaves</div>
+                  <div class="value" id="adm-pending-leaves">0</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon purple"><i data-lucide="briefcase"></i></div>
+                <div class="stat-info">
+                  <div class="label">Active Drives</div>
+                  <div class="value" id="adm-active-drives">0</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon blue"><i data-lucide="file-check-2"></i></div>
+                <div class="stat-info">
+                  <div class="label">Uploaded Results</div>
+                  <div class="value" id="adm-results-uploaded">0</div>
+                </div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-icon green"><i data-lucide="log-in"></i></div>
+                <div class="stat-info">
+                  <div class="label">Logins Today</div>
+                  <div class="value" id="adm-today-logins">0</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="quick-actions-section">
+              <h3 class="quick-actions-title">
+                <i data-lucide="settings" size="20" style="color: var(--primary-color);"></i>
+                Quick Command Actions
+              </h3>
+              <div class="quick-actions-grid">
+                
+                <div class="action-card" onclick="switchTab('tab-admin-students')">
+                  <div class="action-icon blue" style="background: var(--accent-blue-bg); color: var(--accent-blue);">
+                    <i data-lucide="users" size="22"></i>
+                  </div>
+                  <div class="action-details">
+                    <h4>Manage Student Accounts</h4>
+                    <p>Register new profiles, edit directories, update details, and export student summaries.</p>
+                  </div>
+                </div>
+
+                <div class="action-card" onclick="switchTab('tab-admin-attendance')">
+                  <div class="action-icon green" style="background: var(--accent-green-bg); color: var(--accent-green);">
+                    <i data-lucide="calendar" size="22"></i>
+                  </div>
+                  <div class="action-details">
+                    <h4>Attendance Tracking</h4>
+                    <p>Import cumulative attendance logs and check student theory/practical percentages.</p>
+                  </div>
+                </div>
+
+                <div class="action-card" onclick="switchTab('tab-admin-assessment')">
+                  <div class="action-icon purple" style="background: var(--accent-purple-bg); color: var(--accent-purple);">
+                    <i data-lucide="award" size="22"></i>
+                  </div>
+                  <div class="action-details">
+                    <h4>Assessments & Marks</h4>
+                    <p>View and manage internal tests, class quizzes, and periodic assessment grids.</p>
+                  </div>
+                </div>
+
+                <div class="action-card" onclick="switchTab('tab-admin-results')">
+                  <div class="action-icon amber" style="background: var(--accent-amber-bg); color: var(--accent-amber);">
+                    <i data-lucide="file-check-2" size="22"></i>
+                  </div>
+                  <div class="action-details">
+                    <h4>Result & MDM Management</h4>
+                    <p>Upload Excel results sheets, allocate faculty mentors, search scorecards, and delete imports.</p>
+                  </div>
+                </div>
+
+                <div class="action-card" onclick="switchTab('tab-admin-assignments')">
+                  <div class="action-icon blue" style="background: var(--accent-blue-bg); color: var(--accent-blue);">
+                    <i data-lucide="book-open" size="22"></i>
+                  </div>
+                  <div class="action-details">
+                    <h4>Assignments Manager</h4>
+                    <p>Post new student coursework, track submissions, and grade submissions.</p>
+                  </div>
+                </div>
+
+                <div class="action-card" onclick="switchTab('tab-admin-announcements')">
+                  <div class="action-icon rose" style="background: var(--accent-rose-bg); color: var(--accent-rose);">
+                    <i data-lucide="megaphone" size="22"></i>
+                  </div>
+                  <div class="action-details">
+                    <h4>Broadcast Bulletins</h4>
+                    <p>Send notice alerts, emergency warnings, updates, and placement circulars.</p>
+                  </div>
+                </div>
+
+                <div class="action-card" onclick="switchTab('tab-admin-documents')">
+                  <div class="action-icon purple" style="background: var(--accent-purple-bg); color: var(--accent-purple);">
+                    <i data-lucide="file-text" size="22"></i>
+                  </div>
+                  <div class="action-details">
+                    <h4>Academic Documents</h4>
+                    <p>Upload lecture slides, semester syllabi, question banks, and templates.</p>
+                  </div>
+                </div>
+
+                <div class="action-card" onclick="switchTab('tab-admin-placements')">
+                  <div class="action-icon green" style="background: var(--accent-green-bg); color: var(--accent-green);">
+                    <i data-lucide="briefcase" size="22"></i>
+                  </div>
+                  <div class="action-details">
+                    <h4>Placement Drives</h4>
+                    <p>Publish active recruitment schedules, job details, and track eligible students.</p>
+                  </div>
+                </div>
+
+                <div class="action-card" onclick="switchTab('tab-admin-library')">
+                  <div class="action-icon rose" style="background: var(--accent-rose-bg); color: var(--accent-rose);">
+                    <i data-lucide="book" size="22"></i>
+                  </div>
+                  <div class="action-details">
+                    <h4>Library Catalog</h4>
+                    <p>Manage textbooks inventory, track issued books, and log issue histories.</p>
+                  </div>
+                </div>
+
+                <div class="action-card" onclick="switchTab('tab-admin-leave')">
+                  <div class="action-icon amber" style="background: var(--accent-amber-bg); color: var(--accent-amber);">
+                    <i data-lucide="clock" size="22"></i>
+                  </div>
+                  <div class="action-details">
+                    <h4>Leave Approvals</h4>
+                    <p>Review student leave requests, check reason documents, and approve/reject leaves.</p>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+          </section>
+
+          <!-- ADMIN MANAGE STUDENTS -->
+          <section id="tab-admin-students" class="tab-pane">
+            <div class="page-header">
+              <div class="page-title">
+                <h2>Manage Student Accounts</h2>
+                <p>Register, update, and manage student directory profiles.</p>
+              </div>
+              <button class="btn btn-primary" onclick="openAddStudentModal()"><i data-lucide="plus" size="16"></i> Add Student</button>
+            </div>
+            <div class="content-card">
+              <!-- Search, filter and Excel actions -->
+              <div class="table-actions-bar" style="display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;">
+                <div style="position: relative; flex: 1; min-width: 250px; max-width: 350px;">
+                  <input type="text" id="admin-student-search" class="form-control" placeholder="Search by name, roll, email..." oninput="loadAdminStudents()" style="padding-left: 36px;">
+                  <i data-lucide="search" size="16" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                </div>
+                <select id="admin-student-filter-dept" class="form-control" style="max-width: 160px;" onchange="loadAdminStudents()">
+                  <option value="">All Departments</option>
+                  <option value="CSE">CSE</option>
+                  <option value="AIDS">AIDS</option>
+                  <option value="ENTC">ENTC</option>
+                  <option value="MECH">MECH</option>
+                  <option value="CIVIL">CIVIL</option>
+                </select>
+                <select id="admin-student-filter-year" class="form-control" style="max-width: 160px;" onchange="loadAdminStudents()">
+                  <option value="">All Years</option>
+                  <option value="1st Year">1st Year</option>
+                  <option value="2nd Year">2nd Year</option>
+                  <option value="3rd Year">3rd Year</option>
+                  <option value="4th Year">4th Year</option>
+                </select>
+                <div style="flex-grow: 1;"></div>
+                <button class="btn btn-secondary btn-sm" onclick="exportStudents()" style="display: flex; align-items: center; gap: 6px;">
+                  <i data-lucide="download" size="14"></i> Export Excel
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="triggerImportFile()" style="display: flex; align-items: center; gap: 6px;">
+                  <i data-lucide="upload" size="14"></i> Import Excel
+                </button>
+                <input type="file" id="admin-student-import-file" style="display: none;" accept=".xlsx, .xls" onchange="importStudents(event)">
+              </div>
+              
+              <div class="table-responsive">
+                <table class="custom-table" id="admin-students-table">
+                  <thead>
+                    <tr>
+                      <th>Roll No. / ID</th>
+                      <th>PRN Number</th>
+                      <th>Name</th>
+                      <th>Course</th>
+                      <th>Year</th>
+                      <th>Email</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody><tr><td colspan="7">Loading directory...</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- ADMIN ATTENDANCE -->
+          <section id="tab-admin-attendance" class="tab-pane">
+            <div class="page-header">
+              <div class="page-title">
+                <h2>Record & Manage Attendance</h2>
+                <p>Log student class attendance entries.</p>
+              </div>
+              <div style="display: flex; gap: 10px;">
+                <button class="btn btn-primary" onclick="openModal('modal-admin-attendance')"><i data-lucide="plus" size="16"></i> Record Attendance</button>
+                <button class="btn btn-secondary" onclick="triggerImportAttendanceFile()" style="display: flex; align-items: center; gap: 6px;">
+                  <i data-lucide="upload" size="16"></i> Import Attendance
+                </button>
+                <input type="file" id="admin-attendance-import-file" style="display: none;" accept=".xlsx, .xls" onchange="importAttendance(event)">
+              </div>
+            </div>
+
+            <div class="content-card" style="margin-bottom: 1.25rem;">
+              <div class="form-group" style="margin-bottom: 0; max-width: 320px;">
+                <label style="margin-bottom: 6px; font-weight: 600; display: block;">Select Student</label>
+                <select id="admin-attendance-student-select" class="form-control" onchange="loadAdminAttendanceForStudent(this.value)">
+                  <option value="">-- Select a Student --</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="content-card">
+              <div class="table-responsive">
+                <table class="custom-table" id="admin-attendance-table">
+                  <thead>
+                    <tr>
+                      <th>Student</th>
+                      <th>Date</th>
+                      <th>Subject</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody><tr><td colspan="5" style="text-align: center;">Please select a student to load attendance logs.</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- ADMIN ASSESSMENTS -->
+          <section id="tab-admin-assessment" class="tab-pane">
+            <div class="page-header">
+              <div class="page-title">
+                <h2>Assessments & Marks Entry</h2>
+                <p>Record unit test and exam marks for students.</p>
+              </div>
+              <div style="display: flex; gap: 10px;">
+                <button class="btn btn-primary" onclick="openModal('modal-admin-assessment')"><i data-lucide="plus" size="16"></i> Record Marks</button>
+                <button class="btn btn-secondary" onclick="triggerImportResultFile()" style="display: flex; align-items: center; gap: 6px;">
+                  <i data-lucide="upload" size="16"></i> Import Results Excel
+                </button>
+                <input type="file" id="admin-result-import-file" style="display: none;" accept=".xlsx, .xls" onchange="importResults(event)">
+              </div>
+            </div>
+
+            <div class="content-card" style="margin-bottom: 1.25rem;">
+              <div class="form-group" style="margin-bottom: 0; max-width: 320px;">
+                <label style="margin-bottom: 6px; font-weight: 600; display: block;">Select Student</label>
+                <select id="admin-assessment-student-select" class="form-control" onchange="loadAdminAssessmentForStudent(this.value)">
+                  <option value="">-- Select a Student --</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="content-card">
+              <div class="table-responsive">
+                <table class="custom-table" id="admin-assessment-table">
+                  <thead>
+                    <tr>
+                      <th>Student</th>
+                      <th>Subject</th>
+                      <th>Type</th>
+                      <th>Obtained</th>
+                      <th>Max Marks</th>
+                      <th>Date</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody><tr><td colspan="7" style="text-align: center;">Please select a student to load assessments.</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- ADMIN ASSIGNMENTS -->
+          <section id="tab-admin-assignments" class="tab-pane">
+            <div class="page-header">
+              <div class="page-title">
+                <h2>Create & Manage Assignments</h2>
+                <p>Publish coursework tasks and submission deadlines.</p>
+              </div>
+              <button class="btn btn-primary" onclick="openModal('modal-admin-assignment')"><i data-lucide="plus" size="16"></i> Create Assignment</button>
+            </div>
+            <div class="content-card">
+              <div class="table-responsive">
+                <table class="custom-table" id="admin-assignments-table">
+                  <thead>
+                    <tr>
+                      <th>Subject</th>
+                      <th>Title</th>
+                      <th>Due Date</th>
+                      <th>Total Marks</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody><tr><td colspan="5">Loading assignments...</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- ADMIN ANNOUNCEMENTS -->
+          <section id="tab-admin-announcements" class="tab-pane">
+            <div class="page-header">
+              <div class="page-title">
+                <h2>Broadcast Announcements</h2>
+                <p>Publish campus announcements, exam notices, and alerts.</p>
+              </div>
+              <button class="btn btn-primary" onclick="openModal('modal-admin-announcement')"><i data-lucide="plus" size="16"></i> Post Announcement</button>
+            </div>
+            <div class="content-card">
+              <div class="table-responsive">
+                <table class="custom-table" id="admin-announcements-table">
+                  <thead>
+                    <tr>
+                      <th>Title</th>
+                      <th>Category</th>
+                      <th>Priority</th>
+                      <th>Date</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody><tr><td colspan="5">Loading broadcasts...</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- ADMIN DOCUMENTS -->
+          <section id="tab-admin-documents" class="tab-pane">
+            <div class="page-header">
+              <div class="page-title">
+                <h2>Document Repository</h2>
+                <p>Upload lecture notes, syllabus, and official circulars.</p>
+              </div>
+              <button class="btn btn-primary" onclick="openModal('modal-admin-document')"><i data-lucide="upload" size="16"></i> Upload Document</button>
+            </div>
+            <div class="content-card">
+              <div class="table-responsive">
+                <table class="custom-table" id="admin-documents-table">
+                  <thead>
+                    <tr>
+                      <th>Title</th>
+                      <th>Category</th>
+                      <th>File Size</th>
+                      <th>Upload Date</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody><tr><td colspan="5">Loading documents...</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- ADMIN PLACEMENTS -->
+          <section id="tab-admin-placements" class="tab-pane">
+            <div class="page-header">
+              <div class="page-title">
+                <h2>Placement Drive Management</h2>
+                <p>Create recruitment drives and manage eligibility.</p>
+              </div>
+              <button class="btn btn-primary" onclick="openModal('modal-admin-placement')"><i data-lucide="plus" size="16"></i> Create Drive</button>
+            </div>
+            <div class="content-card">
+              <div class="table-responsive">
+                <table class="custom-table" id="admin-placements-table">
+                  <thead>
+                    <tr>
+                      <th>Company Name</th>
+                      <th>Job Role</th>
+                      <th>Package (LPA)</th>
+                      <th>Location</th>
+                      <th>Deadline</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody><tr><td colspan="7">Loading placement drives...</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+
+
+          <!-- ADMIN LIBRARY -->
+          <section id="tab-admin-library" class="tab-pane">
+            <div class="page-header">
+              <div class="page-title">
+                <h2>Library Book Management</h2>
+                <p>Manage catalog, issue books, and process returns.</p>
+              </div>
+              <div style="display: flex; gap: 10px;">
+                <button class="btn btn-primary" onclick="openModal('modal-admin-book')"><i data-lucide="plus" size="16"></i> Add Book</button>
+                <button class="btn btn-secondary" onclick="openIssueBookModal()"><i data-lucide="book-open" size="16"></i> Issue Book</button>
+              </div>
+            </div>
+            <div class="content-card">
+              <div class="table-responsive">
+                <table class="custom-table" id="admin-issued-books-table">
+                  <thead>
+                    <tr>
+                      <th>Book Title</th>
+                      <th>Issued Student</th>
+                      <th>Issue Date</th>
+                      <th>Due Date</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody><tr><td colspan="6">Loading issued books...</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+
+            <!-- Book Catalog Card -->
+            <div class="content-card" style="margin-top: 1.5rem;">
+              <div class="card-header" style="margin-bottom: 1rem;">
+                <h3><i data-lucide="book-open" size="18"></i> Book Catalog</h3>
+              </div>
+              <div class="table-responsive">
+                <table class="custom-table" id="admin-books-catalog-table">
+                  <thead>
+                    <tr>
+                      <th>Title</th>
+                      <th>Author</th>
+                      <th>ISBN</th>
+                      <th>Category</th>
+                      <th>Available / Total Copies</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody><tr><td colspan="6">Loading catalog...</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- ADMIN LEAVE APPROVALS -->
+          <section id="tab-admin-leave" class="tab-pane">
+            <div class="page-header">
+              <div class="page-title">
+                <h2>Review Student Leave Applications</h2>
+                <p>Approve or reject leave requests with admin remarks.</p>
+              </div>
+            </div>
+            <div class="content-card">
+              <div class="table-responsive">
+                <table class="custom-table" id="admin-leave-table">
+                  <thead>
+                    <tr>
+                      <th>Student</th>
+                      <th>From - To</th>
+                      <th>Reason</th>
+                      <th>Status</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody><tr><td colspan="5">Loading leave applications...</td></tr></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <!-- ADMIN PROFILE TAB -->
+          <section id="tab-admin-profile" class="tab-pane">
+            <div class="page-header">
+              <div class="page-title">
+                <h2>Admin Profile Settings</h2>
+                <p>Manage your account name and security credentials.</p>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+              <div class="content-card">
+                <div class="card-header">
+                  <h3><i data-lucide="user" size="18"></i> Account Information</h3>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px;">
+                  <div>
+                    <span style="color: var(--text-muted); font-size: 0.9rem; display: block;">Administrator ID</span>
+                    <strong style="font-size: 1.1rem;">{{ student_id }}</strong>
+                  </div>
+                  <div>
+                    <span style="color: var(--text-muted); font-size: 0.9rem; display: block;">Role Type</span>
+                    <strong style="font-size: 1.1rem; text-transform: capitalize;">{{ role }}</strong>
+                  </div>
+                </div>
+                
+                <form id="admin-profile-form" onsubmit="handleAdminProfileUpdate(event)">
+                  <div class="form-group">
+                    <label>Display Name</label>
+                    <input type="text" id="adm-profile-name" class="form-control" value="{{ student_name }}" required>
+                  </div>
+                  <button type="submit" class="btn btn-primary" style="width: 100%;">Update Name</button>
+                </form>
+              </div>
+
+              <div class="content-card">
+                <div class="card-header">
+                  <h3><i data-lucide="lock" size="18"></i> Change Password</h3>
+                </div>
+                <form id="admin-change-pass-form" onsubmit="handleAdminPasswordChange(event)">
+                  <div class="form-group">
+                    <label>Current Password</label>
+                    <input type="password" id="adm-old-pass" class="form-control" required placeholder="Enter current password">
+                  </div>
+                  <div class="form-group">
+                    <label>New Password</label>
+                    <input type="password" id="adm-new-pass" class="form-control" required placeholder="Enter new password">
+                  </div>
+                  <button type="submit" class="btn btn-primary" style="width: 100%;">Update Password</button>
+                </form>
+              </div>
+            </div>
+          </section>
+
+          <!-- ADMINS MANAGEMENT PANEL FOR SUPER ADMIN -->
+          {% if admin_type == 'head_admin' %}
+          <section id="tab-admin-manage-admins" class="tab-pane">
+            <div class="page-header">
+              <div class="page-title">
+                <h2>Administrator Management</h2>
+                <p>Add, delete, and view department administrators in the system.</p>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-bottom: 2.5rem;">
+              <!-- Card: Create Admin -->
+              <div class="content-card">
+                <div class="card-header">
+                  <h3><i data-lucide="user-plus" size="18"></i> Create Department Admin</h3>
+                </div>
+                <form id="head-admin-create-form" onsubmit="handleCreateAdmin(event)">
+                  <div class="form-group">
+                    <label>Admin ID / Username</label>
+                    <input type="text" id="new-adm-id" class="form-control" required placeholder="e.g. CSE_ADMIN">
+                  </div>
+                  <div class="form-group">
+                    <label>Display Name</label>
+                    <input type="text" id="new-adm-name" class="form-control" required placeholder="e.g. CSE Department Admin">
+                  </div>
+                  <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="new-adm-password" class="form-control" required placeholder="Enter password">
+                  </div>
+                  <div class="form-group">
+                    <label>Department Access</label>
+                    <select id="new-adm-dept" class="form-control" required>
+                      <option value="HEAD">Head Admin (No Department Restriction)</option>
+                      <option value="CSE" selected>CSE (Computer Science)</option>
+                      <option value="ECE">ECE (Electronics & Comm)</option>
+                      <option value="ME">ME (Mechanical Eng)</option>
+                      <option value="CE">CE (Civil Eng)</option>
+                    </select>
+                  </div>
+                  <button type="submit" class="btn btn-primary" style="width: 100%;">Create Account</button>
+                </form>
+              </div>
+
+              <!-- Info Panel -->
+              <div class="content-card" style="display: flex; flex-direction: column; justify-content: center; gap: 1rem;">
+                <div style="text-align: center;">
+                  <div style="font-size: 3rem; color: var(--primary); margin-bottom: 0.5rem;"><i data-lucide="shield-check"></i></div>
+                  <h3>Security & Scope Guidelines</h3>
+                </div>
+                <ul style="padding-left: 1.5rem; color: var(--text-muted); font-size: 0.9rem; line-height: 1.6;">
+                  <li><strong>Department Admins:</strong> Restrained strictly to viewing, editing, and managing students/attendance/results in their assigned department code.</li>
+                  <li><strong>Head Admins:</strong> Global control. They see statistics and profiles for all students across all departments and can manage administrative user accounts.</li>
+                </ul>
+              </div>
+            </div>
+
+            <!-- Admins Table Card -->
+            <div class="content-card">
+              <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+                <h3><i data-lucide="users" size="18"></i> Active Administrators</h3>
+                <button class="btn btn-secondary btn-sm" onclick="loadAdminsList()"><i data-lucide="refresh-cw" size="14"></i> Refresh</button>
+              </div>
+              <div class="table-responsive">
+                <table class="table" id="head-admins-table">
+                  <thead>
+                    <tr>
+                      <th>Admin ID</th>
+                      <th>Name</th>
+                      <th>Scope / Department</th>
+                      <th>Created At</th>
+                      <th>Action</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td colspan="5" style="text-align: center;">Loading administrators...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+          {% endif %}
+
+          <!-- FEATURE 1: ADMIN RESULT MANAGEMENT PANEL -->
+          <section id="tab-admin-results" class="tab-pane">
+            <div class="page-header">
+              <div class="page-title">
+                <h2>Result & MDM Mentor Management</h2>
+                <p>Upload student results and MDM allocations, query, search, delete, and export records.</p>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; margin-bottom: 2rem;">
+              
+              <!-- Card: Upload Results -->
+              <div class="content-card">
+                <div class="card-header">
+                  <h3><i data-lucide="upload" size="18"></i> Upload Results Spreadsheet</h3>
+                </div>
+                <form id="admin-results-upload-form" onsubmit="handleResultsUpload(event)">
+                  <div class="form-group">
+                    <label>Select Excel File (.xlsx, .xls)</label>
+                    <input type="file" id="results-upload-file" class="form-control" accept=".xlsx, .xls" required>
+                  </div>
+                  <div class="form-group">
+                    <label>Academic Year</label>
+                    <select id="results-upload-year" class="form-control" required>
+                      <!-- Populated dynamically -->
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Semester</label>
+                    <select id="results-upload-semester" class="form-control" required>
+                      <!-- Populated dynamically -->
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label>Exam Type</label>
+                    <select id="results-upload-exam" class="form-control" required>
+                      <option value="End Semester">End Semester</option>
+                      <option value="In Semester (ISE)">In Semester (ISE)</option>
+                      <option value="Mid Semester (MSE)">Mid Semester (MSE)</option>
+                    </select>
+                  </div>
+                  <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i data-lucide="check" size="16"></i> Import Results
+                  </button>
+                </form>
+              </div>
+
+              <!-- Card: Upload MDM & Faculty Allocation -->
+              <div class="content-card">
+                <div class="card-header">
+                  <h3><i data-lucide="user-check" size="18"></i> Import MDM Faculty Allocation</h3>
+                </div>
+                <form id="admin-mdm-upload-form" onsubmit="handleMdmUpload(event)">
+                  <div class="form-group">
+                    <label>Select MDM Allocations Sheet (.xlsx, .xls)</label>
+                    <input type="file" id="mdm-upload-file" class="form-control" accept=".xlsx, .xls" required>
+                  </div>
+                  <p class="help-text" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">
+                    * Maps mentors to students using PRN or Roll Number. Missing mappings fall back to departmental defaults.
+                  </p>
+                  <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i data-lucide="check" size="16"></i> Import MDM Allocation
+                  </button>
+                </form>
+              </div>
+
+              <!-- Card: Digital Signature Management -->
+              <div class="content-card">
+                <div class="card-header">
+                  <h3><i data-lucide="signature" size="18"></i> Digital Signature Management</h3>
+                </div>
+                <form id="admin-signature-upload-form" onsubmit="handleSignatureUpload(event)">
+                  <div class="form-group" style="text-align: center; margin-bottom: 1rem;">
+                    <label style="display: block; margin-bottom: 0.5rem; text-align: left;">Current Active Signature</label>
+                    <div style="border: 1px dashed var(--border-color); padding: 10px; border-radius: var(--radius-md); background: #ffffff; display: inline-block;">
+                      <img id="admin-signature-preview" src="/static/uploads/digital_signature.jpg" style="max-height: 50px; max-width: 100%; display: block;" onerror="this.src='https://placehold.co/150x50?text=No+Signature';">
+                    </div>
+                  </div>
+                  <div class="form-group">
+                    <label>Select Signature Image (.png, .jpg, .jpeg)</label>
+                    <input type="file" id="signature-upload-file" class="form-control" accept=".png, .jpg, .jpeg" required>
+                  </div>
+                  <button type="submit" class="btn btn-primary" style="width: 100%;">
+                    <i data-lucide="check" size="16"></i> Upload Signature
+                  </button>
+                </form>
+              </div>
+
+            </div>
+
+            <!-- View / Filter / Export Results Section -->
+            <div class="content-card">
+              <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                <h3><i data-lucide="list" size="18"></i> View Uploaded Subject Results</h3>
+                <div style="display: flex; gap: 8px;">
+                  <button class="btn btn-secondary btn-sm" onclick="exportResultsToExcel()">
+                    <i data-lucide="download" size="14"></i> Export to Excel
+                  </button>
+                </div>
+              </div>
+
+              <!-- Filters Toolbar -->
+              <div class="filters-toolbar" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 1rem 0; padding: 1rem; background: var(--bg-body); border-radius: var(--radius-md);">
+                <div class="form-group" style="margin-bottom:0;">
+                  <label style="font-size:0.75rem; font-weight:600;">Search Student</label>
+                  <input type="text" id="filter-results-search" class="form-control form-control-sm" placeholder="Roll No / Name..." oninput="queryAdminResults()">
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                  <label style="font-size:0.75rem; font-weight:600;">Academic Year</label>
+                  <select id="filter-results-year" class="form-control form-control-sm" onchange="queryAdminResults()">
+                    <option value="">All Years</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                  <label style="font-size:0.75rem; font-weight:600;">Semester</label>
+                  <select id="filter-results-semester" class="form-control form-control-sm" onchange="queryAdminResults()">
+                    <option value="">All Semesters</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                  <label style="font-size:0.75rem; font-weight:600;">Exam Type</label>
+                  <select id="filter-results-exam" class="form-control form-control-sm" onchange="queryAdminResults()">
+                    <option value="">All Exams</option>
+                    <option value="End Semester">End Semester</option>
+                    <option value="In Semester (ISE)">In Semester (ISE)</option>
+                    <option value="Mid Semester (MSE)">Mid Semester (MSE)</option>
+                  </select>
+                </div>
+                <div class="form-group" style="margin-bottom:0;">
+                  <label style="font-size:0.75rem; font-weight:600;">Subject Name</label>
+                  <input type="text" id="filter-results-subject" class="form-control form-control-sm" placeholder="Subject..." oninput="queryAdminResults()">
+                </div>
+              </div>
+
+              <!-- Results Grid Table -->
+              <div class="table-responsive">
+                <table class="custom-table" id="admin-results-table">
+                  <thead>
+                    <tr>
+                      <th>Roll Number</th>
+                      <th>PRN</th>
+                      <th>Student Name</th>
+                      <th>Sem / Exam</th>
+                      <th>Subject Name</th>
+                      <th>Int</th>
+                      <th>Ext</th>
+                      <th>Prac</th>
+                      <th>Total</th>
+                      <th>Grade</th>
+                      <th>SGPA/CGPA</th>
+                      <th>Status</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <tr>
+                      <td colspan="13" style="text-align: center; color: var(--text-muted);">Use filters or enter a search query to load result rows.</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+        {% endif %}
+
+      </main>
+    </div>
+  </div>
+
+  <!-- ============ MODALS ============ -->
+
+  <!-- Modal: Submission Upload Assignment -->
+  <div class="modal-overlay" id="modal-submit-assign">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3>Submit Assignment</h3>
+        <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-submit-assign')">X</button>
+      </div>
+      <form id="submit-assign-form" onsubmit="handleAssignmentSubmit(event)">
+        <input type="hidden" id="sub-assign-id">
+        <div class="form-group">
+          <label>Attach Submission File</label>
+          <input type="file" id="sub-assign-file" class="form-control" required>
+        </div>
+        <div class="form-group">
+          <label>Comments / Notes</label>
+          <textarea id="sub-assign-comments" class="form-control" rows="3"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Work</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Add Skill -->
+  <div class="modal-overlay" id="modal-add-skill">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3>Add New Skill</h3>
+        <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-add-skill')">X</button>
+      </div>
+      <form id="add-skill-form" onsubmit="handleAddSkill(event)">
+        <div class="form-group">
+          <label>Skill Name</label>
+          <input type="text" id="skill-name" class="form-control" placeholder="e.g. Python, React, SQL" required>
+        </div>
+        <div class="form-group">
+          <label>Category</label>
+          <select id="skill-category" class="form-control">
+            <option value="Programming">Programming</option>
+            <option value="Technical">Technical</option>
+            <option value="Soft Skills">Soft Skills</option>
+            <option value="Certification">Certification</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Proficiency</label>
+          <select id="skill-level" class="form-control">
+            <option value="Beginner">Beginner</option>
+            <option value="Intermediate">Intermediate</option>
+            <option value="Advanced">Advanced</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Save Skill</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Apply Placement Drive -->
+  <div class="modal-overlay" id="modal-apply-drive">
+    <div class="modal-container">
+      <div class="modal-header">
+        <h3 id="drive-modal-title">Apply for Placement Drive</h3>
+        <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-apply-drive')">X</button>
+      </div>
+      <form id="apply-drive-form" onsubmit="handleApplyDrive(event)">
+        <input type="hidden" id="drive-apply-id">
+        <div class="form-group">
+          <label>Attach Resume (PDF/DOC)</label>
+          <input type="file" id="drive-resume-file" class="form-control" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Submit Job Application</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ADMIN MODALS -->
+  {% if role == 'admin' %}
+    <!-- Admin: Add/Edit Student -->
+    <div class="modal-overlay" id="modal-admin-student">
+      <div class="modal-container" style="max-width: 600px; max-height: 85vh; overflow-y: auto;">
+        <div class="modal-header" style="position: sticky; top: 0; background: var(--bg-card); z-index: 10; padding-bottom: 10px; border-bottom: 1px solid var(--border-color);">
+          <h3 id="adm-st-modal-title">Add New Student Account</h3>
+          <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-admin-student')">X</button>
+        </div>
+        <form id="admin-student-form" onsubmit="handleAdminStudentSubmit(event)" style="padding-top: 15px;">
+          <input type="hidden" id="adm-st-mode" value="add">
+
+          <!-- Admin view of student avatar -->
+          <div id="adm-st-avatar-container" style="text-align: center; margin-bottom: 1.5rem; display: none;">
+            <img id="adm-st-avatar-img" src="" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; cursor: pointer; border: 2px solid var(--border-color);" onclick="expandStudentAvatar()">
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 4px;">Click photo to expand</p>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
+            <div class="form-group">
+              <label>Student Roll No. / ID</label>
+              <input type="text" id="adm-st-id" class="form-control" required placeholder="e.g. 240101099">
+            </div>
+            <div class="form-group">
+              <label>PRN Number</label>
+              <input type="text" id="adm-st-prn" class="form-control" placeholder="e.g. 2024CSE1001">
+            </div>
+            <div class="form-group">
+              <label>Full Name</label>
+              <input type="text" id="adm-st-name" class="form-control" required>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px;">
+            <div class="form-group">
+              <label id="adm-st-pass-label">Password</label>
+              <input type="password" id="adm-st-pass" class="form-control" placeholder="e.g. pass123">
+            </div>
+            <div class="form-group">
+              <label>Course & Branch</label>
+              <input type="text" id="adm-st-course" class="form-control" value="B.Tech Computer Science" required>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+            <div class="form-group">
+              <label>Academic Year</label>
+              <select id="adm-st-year" class="form-control" required>
+                <option value="1st Year">1st Year</option>
+                <option value="2nd Year">2nd Year</option>
+                <option value="3rd Year" selected>3rd Year</option>
+                <option value="4th Year">4th Year</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Semester</label>
+              <input type="text" id="adm-st-semester" class="form-control" value="Sem 6" required>
+            </div>
+            <div class="form-group">
+              <label>Department</label>
+              <select id="adm-st-dept" class="form-control" required>
+                <option value="CSE" selected>CSE</option>
+                <option value="AIDS">AIDS</option>
+                <option value="ENTC">ENTC</option>
+                <option value="MECH">MECH</option>
+                <option value="CIVIL">CIVIL</option>
+              </select>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px;">
+            <div class="form-group">
+              <label>Email Address</label>
+              <input type="email" id="adm-st-email" class="form-control" placeholder="name@university.edu">
+            </div>
+            <div class="form-group">
+              <label>Phone Number</label>
+              <input type="text" id="adm-st-phone" class="form-control" placeholder="e.g. 9876543210">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+            <div class="form-group">
+              <label>Date of Birth</label>
+              <input type="date" id="adm-st-dob" class="form-control">
+            </div>
+            <div class="form-group">
+              <label>Blood Group</label>
+              <input type="text" id="adm-st-blood" class="form-control" placeholder="e.g. O+">
+            </div>
+            <div class="form-group">
+              <label>CGPA</label>
+              <input type="number" id="adm-st-cgpa" class="form-control" step="0.01" min="0" max="10" value="8.5">
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Address</label>
+            <textarea id="adm-st-address" class="form-control" rows="2" placeholder="Residential Address"></textarea>
+          </div>
+
+          <div class="form-group" id="adm-st-admission-group">
+            <label>Admission Year</label>
+            <input type="text" id="adm-st-admission-year" class="form-control" value="2023">
+          </div>
+
+          <button type="submit" id="adm-st-submit-btn" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Create Student</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Admin: Record Attendance -->
+    <div class="modal-overlay" id="modal-admin-attendance">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h3>Record Student Attendance</h3>
+          <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-admin-attendance')">X</button>
+        </div>
+        <form id="admin-att-form" onsubmit="handleAdminAddAttendance(event)">
+          <div class="form-group">
+            <label>Student Roll No.</label>
+            <input type="text" id="adm-att-sid" class="form-control" required placeholder="e.g. 240101001">
+          </div>
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="adm-att-date" class="form-control" required>
+          </div>
+          <div class="form-group">
+            <label>Subject</label>
+            <input type="text" id="adm-att-sub" class="form-control" required placeholder="e.g. Operating Systems">
+          </div>
+          <div class="form-group">
+            <label>Status</label>
+            <select id="adm-att-status" class="form-control">
+              <option value="Present">Present</option>
+              <option value="Absent">Absent</option>
+            </select>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%;">Save Record</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Admin: Record Assessment Marks -->
+    <div class="modal-overlay" id="modal-admin-assessment">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h3>Record Assessment Marks</h3>
+          <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-admin-assessment')">X</button>
+        </div>
+        <form id="admin-ass-form" onsubmit="handleAdminAddAssessment(event)">
+          <div class="form-group">
+            <label>Student Roll No.</label>
+            <input type="text" id="adm-ass-sid" class="form-control" required placeholder="e.g. 240101001">
+          </div>
+          <div class="form-group">
+            <label>Subject</label>
+            <input type="text" id="adm-ass-sub" class="form-control" required placeholder="e.g. Computer Networks">
+          </div>
+          <div class="form-group">
+            <label>Exam Type</label>
+            <select id="adm-ass-type" class="form-control">
+              <option value="Unit Test">Unit Test</option>
+              <option value="Mid-Term">Mid-Term</option>
+              <option value="Practical">Practical</option>
+              <option value="Final Exam">Final Exam</option>
+            </select>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <div class="form-group" style="flex: 1;">
+              <label>Marks Obtained</label>
+              <input type="number" id="adm-ass-ob" class="form-control" required step="0.5">
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label>Max Marks</label>
+              <input type="number" id="adm-ass-mx" class="form-control" value="50" required>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Date</label>
+            <input type="date" id="adm-ass-date" class="form-control" required>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%;">Save Marks</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Admin: Create Assignment -->
+    <div class="modal-overlay" id="modal-admin-assignment">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h3>Create New Assignment</h3>
+          <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-admin-assignment')">X</button>
+        </div>
+        <form id="admin-assign-form" onsubmit="handleAdminAddAssignment(event)">
+          <div class="form-group">
+            <label>Subject</label>
+            <input type="text" id="adm-assign-sub" class="form-control" required placeholder="e.g. Computer Networks">
+          </div>
+          <div class="form-group">
+            <label>Assignment Title</label>
+            <input type="text" id="adm-assign-title" class="form-control" required placeholder="e.g. Socket Programming">
+          </div>
+          <div class="form-group">
+            <label>Description / Details</label>
+            <textarea id="adm-assign-desc" class="form-control" rows="3" required placeholder="Explain assignment task instructions..."></textarea>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <div class="form-group" style="flex: 1;">
+              <label>Due Date</label>
+              <input type="date" id="adm-assign-due" class="form-control" required>
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label>Total Marks</label>
+              <input type="number" id="adm-assign-marks" class="form-control" value="50" required>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%;">Create Assignment</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Admin: Post Announcement -->
+    <div class="modal-overlay" id="modal-admin-announcement">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h3>Post New Announcement</h3>
+          <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-admin-announcement')">X</button>
+        </div>
+        <form id="admin-ann-form" onsubmit="handleAdminAddAnnouncement(event)">
+          <div class="form-group">
+            <label>Announcement Title</label>
+            <input type="text" id="adm-ann-title" class="form-control" required placeholder="e.g. Exam Schedule Released">
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <select id="adm-ann-cat" class="form-control">
+              <option value="Academic">Academic</option>
+              <option value="Examination">Examination</option>
+              <option value="Event">Event</option>
+              <option value="Placement">Placement</option>
+              <option value="General" selected>General</option>
+              <option value="Emergency">Emergency</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Priority</label>
+            <select id="adm-ann-prio" class="form-control">
+              <option value="Low">Low</option>
+              <option value="Medium" selected>Medium</option>
+              <option value="High">High</option>
+              <option value="Urgent">Urgent</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Message Content</label>
+            <textarea id="adm-ann-msg" class="form-control" rows="4" required placeholder="Type the announcement message details here..."></textarea>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%;">Broadcast Announcement</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Admin: Upload Document -->
+    <div class="modal-overlay" id="modal-admin-document">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h3>Upload Academic Document</h3>
+          <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-admin-document')">X</button>
+        </div>
+        <form id="admin-doc-form" onsubmit="handleAdminAddDocument(event)">
+          <div class="form-group">
+            <label>Document Title</label>
+            <input type="text" id="adm-doc-title" class="form-control" required placeholder="e.g. CN Unit 1 Notes">
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <select id="adm-doc-cat" class="form-control">
+              <option value="Notes" selected>Notes</option>
+              <option value="Syllabus">Syllabus</option>
+              <option value="Exam Documents">Exam Documents</option>
+              <option value="Circulars">Circulars</option>
+              <option value="Certificates">Certificates</option>
+              <option value="Study Material">Study Material</option>
+              <option value="Important Documents">Important Documents</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Description (Optional)</label>
+            <input type="text" id="adm-doc-desc" class="form-control" placeholder="Short description of the file">
+          </div>
+          <div class="form-group">
+            <label>Select Document File</label>
+            <input type="file" id="adm-doc-file" class="form-control" required>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%;">Upload File</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Admin: Create Drive -->
+    <div class="modal-overlay" id="modal-admin-placement">
+      <div class="modal-container" style="max-height: 80vh; overflow-y: auto;">
+        <div class="modal-header">
+          <h3>Create Placement Drive</h3>
+          <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-admin-placement')">X</button>
+        </div>
+        <form id="admin-placement-form" onsubmit="handleAdminAddPlacement(event)">
+          <div class="form-group">
+            <label>Company Name</label>
+            <input type="text" id="adm-place-comp" class="form-control" required placeholder="e.g. Google India">
+          </div>
+          <div class="form-group">
+            <label>Job Role</label>
+            <input type="text" id="adm-place-role" class="form-control" required placeholder="e.g. Software Engineer">
+          </div>
+          <div class="form-group">
+            <label>Eligibility Criteria</label>
+            <textarea id="adm-place-elig" class="form-control" rows="2" required placeholder="e.g. CGPA >= 7.5, no active backlogs"></textarea>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-group">
+              <label>Package (LPA)</label>
+              <input type="number" id="adm-place-pkg" class="form-control" step="0.1" required placeholder="e.g. 12.5">
+            </div>
+            <div class="form-group">
+              <label>Location</label>
+              <input type="text" id="adm-place-loc" class="form-control" required placeholder="e.g. Pune / Bangalore">
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+            <div class="form-group">
+              <label>Deadline Date</label>
+              <input type="date" id="adm-place-deadline" class="form-control" required>
+            </div>
+            <div class="form-group">
+              <label>Status</label>
+              <select id="adm-place-status" class="form-control">
+                <option value="Active" selected>Active</option>
+                <option value="Upcoming">Upcoming</option>
+                <option value="Closed">Closed</option>
+              </select>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Create Drive</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Admin: Add Book -->
+    <div class="modal-overlay" id="modal-admin-book">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h3>Add Book to Library Catalog</h3>
+          <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-admin-book')">X</button>
+        </div>
+        <form id="admin-book-form" onsubmit="handleAdminAddBook(event)">
+          <div class="form-group">
+            <label>Book Title</label>
+            <input type="text" id="adm-book-title" class="form-control" required placeholder="e.g. Introduction to Algorithms">
+          </div>
+          <div class="form-group">
+            <label>Author(s)</label>
+            <input type="text" id="adm-book-author" class="form-control" required placeholder="e.g. Thomas H. Cormen">
+          </div>
+          <div class="form-group">
+            <label>ISBN Number</label>
+            <input type="text" id="adm-book-isbn" class="form-control" placeholder="e.g. 978-0262033848">
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <div class="form-group" style="flex: 2;">
+              <label>Category</label>
+              <input type="text" id="adm-book-cat" class="form-control" required placeholder="e.g. Computer Science">
+            </div>
+            <div class="form-group" style="flex: 1;">
+              <label>Total Copies</label>
+              <input type="number" id="adm-book-copies" class="form-control" value="5" required>
+            </div>
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%;">Add to Catalog</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Admin: Issue Book -->
+    <div class="modal-overlay" id="modal-issue-book">
+      <div class="modal-container">
+        <div class="modal-header">
+          <h3>Issue Library Book</h3>
+          <button class="btn btn-secondary btn-sm" onclick="closeModal('modal-issue-book')">X</button>
+        </div>
+        <form id="admin-issue-book-form" onsubmit="handleAdminIssueBook(event)">
+          <div class="form-group">
+            <label>Select Book</label>
+            <select id="adm-issue-book-select" class="form-control" required>
+              <option value="">Loading catalog...</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Student Roll No. / ID</label>
+            <input type="text" id="adm-issue-sid" class="form-control" required placeholder="e.g. 240101001">
+          </div>
+          <button type="submit" class="btn btn-primary" style="width: 100%;">Issue Book</button>
+        </form>
+      </div>
+    </div>
+  {% endif %}
+
+  <!-- Full Image Viewer Modal -->
+  <div class="modal-overlay" id="modal-image-viewer" onclick="closeModal('modal-image-viewer')" style="z-index: 10000; background: rgba(0,0,0,0.85);">
+    <div style="position: relative; max-width: 90%; max-height: 90vh; margin: auto; display: flex; align-items: center; justify-content: center; height: 100%;">
+      <span style="position: absolute; top: 15px; right: 15px; color: white; font-size: 2rem; cursor: pointer; font-weight: bold;" onclick="closeModal('modal-image-viewer')">X</span>
+      <img id="expanded-image" src="" style="max-width: 100%; max-height: 80vh; border-radius: var(--radius-md); box-shadow: var(--shadow-lg); object-fit: contain;">
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container" id="toast-container"></div>
+
+  <!-- Print Report Card Container -->
+  <div id="print-report-card-area" class="print-only" style="display: none;"></div>
+
+  <!-- Loading Spinner Overlay -->
+  <div id="loading-overlay" class="modal-overlay" style="z-index: 100000; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center;">
+    <div style="background: var(--bg-card); padding: 2.5rem; border-radius: var(--radius-lg); text-align: center; border: 1px solid var(--border-color); box-shadow: var(--shadow-xl); max-width: 400px; width: 90%;">
+      <div class="spinner" style="width: 50px; height: 50px; border-width: 4px; margin: 0 auto 1.5rem auto;"></div>
+      <h3 style="font-weight: 700; margin-bottom: 0.5rem; color: var(--text-main);">Processing Upload</h3>
+      <p id="loading-text" style="color: var(--text-muted); font-size: 0.9rem; line-height: 1.5;">Reading spreadsheet records, verifying roll numbers and committing transactions. Please don't close this window.</p>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  <script>
+    lucide.createIcons();
+  </script>
+</body>
+</html>
